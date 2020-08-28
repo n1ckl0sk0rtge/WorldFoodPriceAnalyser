@@ -1,0 +1,63 @@
+um_id,um_name,new_um_id,new_um_name,unklar
+5,KG,1,KG,nein
+9,100 KG,100,KG,nein
+14,Marmite,-,Marmite ,?
+15,L,1,L,nein
+16,45 KG,45,KG,nein
+17,90 KG,90,KG,nein
+18,MT,-,MT,?
+19,385 G,0.385,KG,nein
+20,100 Tubers,100,Tubers,?
+21,Bunch,1,Bunch,?
+22,50 KG,50,KG,nein
+23,91 KG,91,KG,nein
+24,400 G,0.4,KG,nein
+25,500 ML,0.5,L,nein
+27,Gallon,4.54609,L,nein
+28,500 G,0.5,KG,nein
+29,Cuartilla,-,Cuartilla,?
+30,Pound,0.45359,KG,nein
+31,Sack,165.10762,KG,nein
+33,Unit,-,Unit,?
+35,Dozen,-,Dozen,?
+36,12.5 KG,12.5,KG,nein
+37,Loaf,-,Loaf,?
+38,750 ML,0.75,L,nein
+40,85 G,0.085,KG,nein
+41,380 G,0.38,KG,nein
+42,150 G,0.15,KG,nein
+43,25 KG,25,KG,nein
+44,60 KG,60,KG,nein
+46,1.8 KG,1.8,KG,nein
+47,3.5 KG,3.5,KG,nein
+48,3 KG,3,KG,nein
+49,650 G,0.65,KG,nein
+50,Libra,-,Libra,?
+51,Day,-,Day,?
+52,1.5 KG,1.5,KG,nein
+55,Course,-,Course,?
+56,USD/LCU,-,USD/LCU,?
+57,2 KG,2,KG,nein
+58,Month,-,Month,?
+61,Head,-,Head,?
+63,200 G,0.2,KG,nein
+65,160 G,0.16,KG,nein
+67,5 L,5,L,nein
+69,30 pcs,-,pcs,?
+71,300 G,0.3,KG,nein
+72,185 G,0.185,KG,nein
+74,125 G,0.125,KG,nein
+75,Packet,-,Packet,?
+76,18 KG,18,KG,nein
+77,3 L,3,L,nein
+81,10 pcs,-,pcs,?
+83,10 KG,10,KG,nein
+86,11.5 KG,11.5,KG,nein
+87,5 KG,5,KG,nein
+90,12 KG,12,KG,nein
+95,168 G,0.168,KG,nein
+96,350 G,0.35,KG,nein
+97,115 G,0.115,KG,nein
+98,750 G,0.75,KG,nein
+99,1.5 L,1.5,L,nein
+100,Cubic meter,-,Cubic meter,?
