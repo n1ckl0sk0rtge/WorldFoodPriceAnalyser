@@ -1,6 +1,6 @@
 library(shiny)
 library(leaflet)
-library( shinydashboard )
+library(shinydashboard)
 library(dplyr)
 library(leaflet.extras)
 
@@ -30,20 +30,26 @@ ui <- fluidPage(
       #
       #hr(),
 
-      selectInput("select", label = h4("Select product"), 
-                  choices = c(list("All products" = 1), productsWithoutDuplicates), 
+      selectInput("selectProducts", label = h4("Select product"), 
+                  choices = productsWithoutDuplicates, 
                   selected = 1),
       
       hr(),
       
       # make a group of checkboxes for years
-      sliderInput("slider2", label = h4("Select years"),
+      sliderInput("sliderYears", label = h4("Select years"),
                   min = head(yearsWithoutDuplicates, n=1), 
                   max = tail(yearsWithoutDuplicates, n=1), 
                   step = 1,
-                  value = c(head(yearsWithoutDuplicates, n=1), tail(yearsWithoutDuplicates, n=1)))
+                  value = c(head(yearsWithoutDuplicates, n=1), tail(yearsWithoutDuplicates, n=1))),
+      
+      hr(),
+      
+      plotOutput("mainPlot")
       
     ),
+    
+    
     
     mainPanel(
       shinydashboard::box(
