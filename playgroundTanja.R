@@ -8,6 +8,7 @@ library(ggmap)
 library(ggiraph)
 library(leaflet)
 library(shiny)
+library(shinythemes)
 library(forecast)
 library(mosaic)
 library(GGally)
@@ -17,7 +18,7 @@ library(modelr)
 library(purrr)
 library(tidyr)
 library(broom)
-
+library(ggfortify)
 
 
 # Datentabelle laden
@@ -305,7 +306,11 @@ mean(lm$residuals) # Mittelwert lm und residuals (muss nahe 0 liegen)
 boxplot(residuals(lm))
 hist(residuals(lm))
 plot(lm)
+autoplot(lm)
 shapiro.test(residuals(lm))
+
+# Regressionsgerade im Streudiagramm
+ggplot(Dataset_Arima, aes(x = year, y = usd))+geom_point()+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 0.5)+labs(x = "Year", y = "USD", title = "lm(usd ~ month_year, data = all products)")
 
 
 # lm Funktion braucht immer die Form (dependent~independent), z.b. Y-Achse: USD dependent variable (predicted); X-Achse independent (predictor)
@@ -325,24 +330,31 @@ shapiro.test(residuals(lm))
 
 # ***Test Lineare Regression am Beispiel Rice***
 
-# Test Beispiel gapminder
+# (Test Beispiel mit gapminder dataset)
 # Preisentwicklung pro Produkt pro Jahr
-Dataset_Arima%>%ggplot(aes(year, usd, group=product))+geom_line(alpha=1/3) # Linienplot gesamt - evtl. in Jitter aendern
+Dataset_Arima%>%ggplot(aes(year, usd, group=product))+geom_jitter(alpha=1/3) # Linienplot gesamt - evtl. in Jitter aendern
 # Einteilung in ein Produkt "Rice" - Verteilung full data, linearer Trend, remaining pattern
 Rice<-filter(Dataset_Arima, product=="Rice")
-Rice%>%ggplot(aes(year, usd))+geom_jitter(color="darkblue", size=0.8)+theme_bw()+ggtitle("Full data = ")
+Rice%>%ggplot(aes(year, usd))+geom_jitter(color="darkblue", size=1)+theme_bw()+ggtitle("Full data = ")
+# Erstellen lineares Modell
 Rice_mod<-lm(usd~year, data=Rice)
-Rice%>%add_predictions(Rice_mod)%>%ggplot(aes(year, pred))+geom_line()+ggtitle("Linear trend+")
+# Lineare Trendlinie:
+Rice%>%add_predictions(Rice_mod)%>%ggplot(aes(year, pred))+geom_line(color="darkred", lwd=1)+theme_bw()+ggtitle("Linear trend+")
 Rice%>%add_residuals(Rice_mod)%>%ggplot(aes(year, resid))+geom_hline(yintercept = 0, color="white", size=3)+geom_jitter(color="red")+ggtitle("Remaining pattern")
 # Warum sehen die residuals gleich aus, wie die normale Preisverteilung??
-summary(Rice_mod) # Zusammenfassung lm
+summary(Rice_mod) # Zusammenfassung lineares Model
 
-plot(Rice_mod)
-#abline(Rice_mod, lwd=3, col="red")
+# Regressionsgerade im Streudiagramm
+ggplot(Rice, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "lm(usd ~ year, data = Rice)")
+
+# plot Regressionsdiagnostik mit ggfortify
+autoplot(Rice_mod)
 
 mean(Rice_mod$residuals) # Mittelwert lm und residuals (muss nahe 0 liegen)
 #hist(residuals(Rice_mod)) # Histogram Residuals Rice data
 
+# shows fitted values and residuals for each of the original points in the regression
+#augment(Rice_mod)
 
 # Model quality
 broom::glance(Rice_mod)
@@ -366,7 +378,7 @@ by_product_country<-by_product_country%>%mutate(model=map(data, product_model))
 #by_product_country%>%filter(product=="Bread") # filtern nach Produkt
 #by_product_country%>%arrange(country, product) # anordnen Land - Produkt
 # ** If your list of data frames and list of models were separate objects, you have to remember that whenever you re-order or subset one vector, you need to re-order or subset all the others in order to keep them in sync. If you forget, your code will continue to work, but it will give the wrong answer!
-# residuals hinzufügen
+# residuals hinzufügen in der Variablen
 by_product_country<-by_product_country%>%mutate(resids=map2(data, model, add_residuals))
 # *unnesting - df in regulären df umwandeln
 resids<-unnest(by_product_country, resids)
@@ -377,10 +389,8 @@ resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="r
 resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~product)+theme_bw(base_size = 8)+ggtitle("Residuals per product over all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # Plot linear trend per country and product
-#Dataset_Arima%>%add_predictions(product_model)%>%ggplot(aes(year, pred, group=product))+geom_line()+ggtitle("Linear trend")
-#linear_trend<-unnest(by_product_country, model)
-resids%>%ggplot(aes(year, model, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~country)+theme_bw(base_size = 8)+ggtitle("Residuals per country over all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
+Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geom_line(color="darkred", lwd=1)+facet_wrap(~country)+theme_bw(base_size = 9)+ggtitle("Linear trend all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geom_line(color="darkred", lwd=1)+facet_wrap(~product)+theme_bw(base_size = 9)+ggtitle("Linear trend all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 # Model quality
@@ -395,3 +405,13 @@ bad_fit<-filter(glance, r.squared<0.25)
 Dataset_Arima%>%semi_join(bad_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Bad Fit on product - r.squared<0.25")
 good_fit<-filter(glance, r.squared>0.75)
 Dataset_Arima%>%semi_join(good_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Good Fit on product - r.squared>0.75")
+
+
+
+
+# fitted: the predicted values, on the same scale as the data.
+# residuals: the actual y values minus the fitted values
+#r.squared the fraction of variance explained by the model
+#adj.r.squared R2
+#adjusted based on the degrees of freedom
+#sigma the square root of the estimated variance of the residuals
