@@ -13,7 +13,6 @@ library(forecast)
 library(mosaic)
 library(GGally)
 library(splines)
-#library(gapminder)
 library(modelr)
 library(purrr)
 library(tidyr)
@@ -338,14 +337,25 @@ Rice<-filter(Dataset_Arima, product=="Rice")
 Rice%>%ggplot(aes(year, usd))+geom_jitter(color="darkblue", size=1)+theme_bw()+ggtitle("Full data = ")
 # Erstellen lineares Modell
 Rice_mod<-lm(usd~year, data=Rice)
+Apple_mod<-lm(usd~year, data=Apples)
 # Lineare Trendlinie:
 Rice%>%add_predictions(Rice_mod)%>%ggplot(aes(year, pred))+geom_line(color="darkred", lwd=1)+theme_bw()+ggtitle("Linear trend+")
+Apples%>%add_predictions(Apple_mod)%>%ggplot(aes(year, pred))+geom_line(color="darkred", lwd=1)+theme_bw()+ggtitle("Linear trend+")
+# Residuals, je näher Punkte an 0  grenzen, dest besser eignet sich das Model
 Rice%>%add_residuals(Rice_mod)%>%ggplot(aes(year, resid))+geom_hline(yintercept = 0, color="white", size=3)+geom_jitter(color="red")+ggtitle("Remaining pattern")
-# Warum sehen die residuals gleich aus, wie die normale Preisverteilung??
-summary(Rice_mod) # Zusammenfassung lineares Model
+Apples%>%add_residuals(Apple_mod)%>%ggplot(aes(year, resid))+geom_hline(yintercept = 0, color="white", size=3)+geom_jitter(color="red")+ggtitle("Remaining pattern")
+
+# Histogramm residuals - müssen eine symmetrische Verteilung (normalverteilt) um 0 haben (no visually obivous pattern), dann passt das Model gut;
+ggplot(data=Rice, aes(Rice_mod$residuals))+geom_histogram(binwidth = 1, color = "black", fill = "purple4")+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())+ggtitle("Histogram for Model Residuals")
+ggplot(data=Apples, aes(Apple_mod$residuals))+geom_histogram(binwidth = 1, color = "black", fill = "purple4")+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())+ggtitle("Histogram for Model Residuals")
+
 
 # Regressionsgerade im Streudiagramm
-ggplot(Rice, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "lm(usd ~ year, data = Rice)")
+ggplot(Rice, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "Linear Model fitted to data (lm(usd ~ year, data = Rice))")
+ggplot(Apples, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "Linear Model fitted to data (lm(usd ~ year, data = Apples))")
+
+# * Regressionsgerade mit Graustufen = Vertrauensintervall, d.h. die Wahrscheinlichkeit liegt bei 95%, dass das Regressionsmodel innerhalb des Vertrauensintervalls liegt
+ggplot(data = Rice, aes(x = year, y = usd))+geom_point()+stat_smooth(method = "lm", col = "red") +theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+ggtitle("Linear Model Fitted to Data")
 
 # plot Regressionsdiagnostik mit ggfortify
 autoplot(Rice_mod)
@@ -353,12 +363,15 @@ autoplot(Rice_mod)
 mean(Rice_mod$residuals) # Mittelwert lm und residuals (muss nahe 0 liegen)
 #hist(residuals(Rice_mod)) # Histogram Residuals Rice data
 
+
 # shows fitted values and residuals for each of the original points in the regression
 #augment(Rice_mod)
 
 # Model quality
 broom::glance(Rice_mod)
-
+# Zusammenfassung lineares Model --> als print anzeigen
+summary(Rice_mod) 
+summary(Apple_mod)
 
 # ***Ende Beispiel Rice***
 
@@ -384,13 +397,17 @@ by_product_country<-by_product_country%>%mutate(resids=map2(data, model, add_res
 resids<-unnest(by_product_country, resids)
 # Plot residuals total
 resids%>%ggplot(aes(year, resid))+geom_jitter(aes(group=product, color="red"), alpha=1/3)+geom_smooth(se=FALSE)+ggtitle("Residuals all products")
-# Plot residuals per country and products
+# * Plot residuals per country and products --> je näher die PUnkte an 0, desto besser eignet sich das Model
 resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~country)+theme_bw(base_size = 8)+ggtitle("Residuals per country over all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~product)+theme_bw(base_size = 8)+ggtitle("Residuals per product over all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# Plot linear trend per country and product
+# * Plot linear trend per country and product - (--> einzelne Produkte auswählen prediction auf alle Laender)
 Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geom_line(color="darkred", lwd=1)+facet_wrap(~country)+theme_bw(base_size = 9)+ggtitle("Linear trend all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geom_line(color="darkred", lwd=1)+facet_wrap(~product)+theme_bw(base_size = 9)+ggtitle("Linear trend all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# * Regressionsgerade für ein Produkt auf verschiedene Länder
+ggplot(data = Rice, aes(x = year, y = usd, group=product))+geom_point()+stat_smooth(method = "lm", col = "red")+facet_wrap(~country)+theme_bw(base_size = 9)+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Linear model fitted to data")
+ggplot(data = Apples, aes(x = year, y = usd, group=product))+geom_point()+stat_smooth(method = "lm", col = "red")+facet_wrap(~country)+theme_bw(base_size = 9)+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Linear model fitted to data")
 
 
 # Model quality
@@ -402,9 +419,14 @@ glance%>%ggplot(aes(product, r.squared))+geom_jitter(width=0.5, color="darkblue"
 glance%>%ggplot(aes(country, r.squared))+geom_jitter(width=0.5, color="darkblue")+theme_bw(base_size=9)+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Model quality per country")
 # Plot bad fit (R^2<0.25 R^2); good fit (R^2>0.75)
 bad_fit<-filter(glance, r.squared<0.25)
+# Plot Produkte mit bad fit
 Dataset_Arima%>%semi_join(bad_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Bad Fit on product - r.squared<0.25")
 good_fit<-filter(glance, r.squared>0.75)
+# Plot Produkte mit good fit
 Dataset_Arima%>%semi_join(good_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Good Fit on product - r.squared>0.75")
+
+# *** Ende Lineare Regression auf alle Produkte und Laender
+
 
 
 
