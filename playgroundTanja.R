@@ -25,7 +25,7 @@ colnames(wfp_sortiert)<-cnames_wfp
 class(wfp_sortiert) # Anzeige Kategorie des Datensatzes
 head(wfp_sortiert)
 tails(wfp_sortiert, 15) # Anzeige letzte 15 Zeilen des Datensatzes
-#data(wfp_sortiert) #? 
+#data(wfp_sortiert) #?
 names(wfp_sortiert) # Anzeige Spaltennamen
 dim(wfp_sortiert) # Summe Zeilen und Spalten des Datensatzes
 summary(wfp_sortiert) # min, 1st qu., median, mean, 3rd qu., max pro Spalte
@@ -35,7 +35,7 @@ ls(wfp_sortiert) # Liste der Spaltennamen
 table(wfp_sortiert$product) #
 nrow(wfp_sortiert) # Anzahl der Zeilen
 ncol(wfp_sortiert) # Anzahl der Spalten
-#tapply(wfp_sortiert$price, mean) # 
+#tapply(wfp_sortiert$price, mean) #
 tapply(wfp_sortiert$country, wfp_sortiert$product=="Apples", summary) # Anzahl der Spalten von "Apples" and gesamten Datensatz
 wfp_sortiert[wfp_sortiert$product == 'Apples',] # Anzeige Datensatz gefiltert auf "Apples"
 
@@ -89,7 +89,7 @@ Afghanistan<-subset(wfp_market_food_prices_USD_neu, country=="Afghanistan")
 
 # PLOTS:
 
-# Farbpalette für Plots erstellen
+# Farbpalette fï¿½r Plots erstellen
 palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 
@@ -106,7 +106,7 @@ Apples%>%select(year, usd, sales_channel)%>%ggplot(mapping=aes(x=year, y=usd, co
 # Verteilung Preise pro Sales Channel pro Produkt per Monat *
 Apples%>%select(month, usd, sales_channel)%>%ggplot(mapping=aes(x=month, y=usd, color=sales_channel, shape=sales_channel))+geom_jitter(width=0.2, size=1.5, alpha=1)+scale_colour_manual(values=palette)+theme_bw()+ggtitle("Price range per product per month")
 
-# Preisverteilung pro Land über alle Jahre im Datensatz "Apples" *
+# Preisverteilung pro Land ï¿½ber alle Jahre im Datensatz "Apples" *
 ggplot(data=Apples, mapping=aes(x=country, y=usd, color=country))+geom_boxplot(size=0.8, alpha=0.3)+ggtitle("Prices Apples per country 2006-2017")
 
 #Histogramme - Haeufigkeit der Laenderpositionen pro Jahr im Datensatz "Apples" ??
@@ -124,7 +124,7 @@ ggplot(data=Apples, mapping=aes(x=country, y=usd, color=country))+geom_line(widt
 
 
 
-### Plots Gesamtübersicht:
+### Plots Gesamtï¿½bersicht:
 
 # Preise alle Produkte alle Laender auf Jahresebene *
 plot_price_all_year<-ggplot(data=wfp_market_food_prices_final1, mapping=aes(x=year, y=usd, color=year))+geom_jitter(width=0.1, alpha=0.6)+theme_bw()+ggtitle("Prices all products over all countries per year")
