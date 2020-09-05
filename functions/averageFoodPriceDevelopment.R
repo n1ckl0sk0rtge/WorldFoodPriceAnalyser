@@ -13,14 +13,13 @@ averageFoodPriceDevelopment <- function(selectedData, extraYearData) {
   }
 
   if(length(price) == length(years)){
-    dataframeWithMeanData <- data.frame(price, years, type = "origin")
+    dataframeWithMeanData <- data.frame(price, year = years, type = "origin")
     
     if(! is.null(extraYearData)){
       dataframeWithMeanData <- rbind(dataframeWithMeanData, extraYearData)
     }
     
-    graph <- ggplot(data=dataframeWithMeanData, aes(x=years, y=price, fill = type)) +
-      theme_bw(base_size = 10) + 
+    graph <- ggplot(data=dataframeWithMeanData, aes(x=year, y=price, fill=type)) +
       geom_bar(stat="identity")
 
     print(graph)

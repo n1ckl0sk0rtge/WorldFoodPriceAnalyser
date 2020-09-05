@@ -87,12 +87,6 @@ ui <- navbarPage(title = h6("Leckerschmecker"),
            
     sidebarLayout(
       sidebarPanel(
-        # define selector for countries
-        #selectInput("select", label = h4("Select Country"), 
-        #            choices = c(list("All countrys" = 1), countrysWithoutDuplicates),
-        #           selected = 1),
-        #
-        #hr(),
         
         selectInput("selectProductsForForcast", label = h4("Select product"), 
                     choices = productsWithoutDuplicates, 
@@ -107,7 +101,7 @@ ui <- navbarPage(title = h6("Leckerschmecker"),
         
         
         selectInput("selectForecastModelForForcast", label = h4("Select Forecast Model"), 
-                    choices = list("Linieare Regression" = 1, "Neuronales Netz" = 2, "[Robert]" = 3), 
+                    choices = list("Linieare Regression" = 1, "Neuronales Netz" = 2, "RandomForest" = 3), 
                     selected = 1),
         hr()
         
@@ -116,6 +110,9 @@ ui <- navbarPage(title = h6("Leckerschmecker"),
       mainPanel(
         h4("Vorhersage der Preisentwicklung für das asugewählte Produkt im Land"),
         plotOutput("forcastPlot"),
+        
+        h4("testplot"),
+        plotOutput("testPlot")
         
       )
       

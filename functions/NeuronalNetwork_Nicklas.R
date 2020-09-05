@@ -15,8 +15,8 @@ forcastingWithNN <- function(selectedData){
   
   predict <- compute(model, testData)
   
+  year_forcast <- data.frame(year = c("2018-01-01", "2019-01-01", "2020-01-01"))
   price_forcast <- predict$net.result
-  year_forcast <- data.frame(years = c("2018-01-01", "2019-01-01", "2020-01-01"))
   
   result <- data.frame(price = price_forcast, year_forcast, type = "forcast")
   

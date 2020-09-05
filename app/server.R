@@ -12,6 +12,10 @@ source("./../functions/pricePerCountry.R")
 source("./../functions/frequencyOfProductsPerSalesChannel.R")
 
 source("./../functions/NeuronalNetwork_Nicklas.R")
+source("./../functions/LinearRegression_Tanja.R")
+source("./../functions/Arima.R")
+
+source("./../functions/testPlot.R")
 
 worldgeodata <- readRDS("./../data/worldgeodata.RDS")
 foodData <- readRDS("./../data/wfp_data.RDS")
@@ -90,6 +94,14 @@ server <- function(input, output, session) {
     }
     
   }) 
+  
+  observe({
+    foodDataForProduct <- unique(filter(foodData, product == input$selectProductsForForcast)$country)
+
+    updateSelectInput(session, "selectCountryForForcast",
+                      choices = foodDataForProduct
+    )
+  })
 
   output$averageFoodPriceDevelopmentPlot <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProducts, input$sliderYears, selectedCountries$ids)
@@ -109,8 +121,28 @@ server <- function(input, output, session) {
   
   output$forcastPlot <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
-    forcast <- forcastingWithNN(selectedData)
+    
+    switch(input$selectForecastModelForForcast,
+           "1" = forcast <- forcastingWithLinearRegression(selectedData),
+           "2" = forcast <- forcastingWithNN(selectedData),
+           forcast <- forcastingWithNN(selectedData)
+    )
+    
+    # forcastingWithArima(selectedData)
+    
     averageFoodPriceDevelopment(selectedData, forcast)
+  })
+  
+  output$testPlot <- renderPlot({
+    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+    
+    switch(input$selectForecastModelForForcast,
+           "1" = forcast <- forcastingWithLinearRegression(selectedData),
+           "2" = forcast <- forcastingWithNN(selectedData),
+           forcast <- forcastingWithNN(selectedData)
+    )
+    
+    testrenderer(selectedData, forcast)
   })
 
   
