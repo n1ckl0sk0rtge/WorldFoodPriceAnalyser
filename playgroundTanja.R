@@ -1,7 +1,6 @@
 # R Script Tanja
 
 #Libraries:
-library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(magrittr)
@@ -19,7 +18,6 @@ library(purrr)
 library(tidyr)
 library(broom)
 library(ggfortify)
-library(GGally)
 
 
 # Datentabelle laden
@@ -145,6 +143,9 @@ ggsave(filename = "plot_price_all_year.png", plot = plot_price_all_year)
 plot_price_all_month<-ggplot(data=wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, mapping=aes(x=month, y=usd, color=month))+geom_jitter(width=0.1, alpha=0.6)+theme_bw()+ggtitle("Prices all products over all countries per month")
 ggsave(filename = "plot_price_all_month.png", plot = plot_price_all_month)
 
+# ! Preise 2006-2017 gesamt - zeigt keine Linie an --> Durchschnittspreis pro Jahr ausrechnen
+wfp_market_food_prices_final1%>%ggplot(aes(x=year, y=usd))+geom_line()+geom_point(size=3)
+
 # Haeufigkeit pro Produkt und Land *
 count_country_product<-wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change%>%select(country, product)%>%ggplot(aes(x=country, y=product))+theme_bw(base_size = 8)+geom_count(col="brown")+ggtitle("Counts per product per country")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ggsave(filename="count_country_product.png", plot=count_country_product)
@@ -157,35 +158,43 @@ ggsave(filename="count_country_product.png", plot=count_country_product)
 plot_price_sales_channel<-ggplot(data=wfp_market_food_prices_final1, mapping=aes(x=sales_channel, y=usd, color=sales_channel))+geom_jitter(size=0.8, alpha=0.3)+ggtitle("Prices USD per Sales Channel 2006-2017")
 ggsave(filename = "plot_price_sales_channel.png", plot = plot_price_sales_channel)
 
+#ggplot(data=wfp_market_food_prices_final1, mapping=aes(x=sales_channel, y=usd, color=sales_channel))+geom_boxplot(size=0.8, alpha=0.3)+ggtitle("Prices USD per Sales Channel 2006-2017")
+
 # Verteilung Preise pro Sales Channel 2006-2017 *zweite oder dritte Plot - Unterschied Farbpalette*
 ggplot(data=wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, mapping=aes(x=year, y=usd, color=sales_channel))+geom_jitter(size=1, alpha=0.5)+ggtitle("Price range per Sales Channel 2006-2017")
 plot_price_sales_channel_year<-wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change%>%select(year, usd, sales_channel)%>%ggplot(mapping=aes(x=year, y=usd, color=sales_channel, shape=sales_channel))+geom_jitter(size=1, alpha=0.7)+scale_colour_manual(values = palette)+theme_bw()+ggtitle("Price range per Sales Channel 2006-2017")
 ggsave(filename = "plot_price_sales_channel_year.png", plot=plot_price_sales_channel_year)
 wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change%>%select(year, usd, sales_channel)%>%ggplot(mapping=aes(x=year, y=usd, color=sales_channel, shape=sales_channel))+geom_jitter(size=1.5, alpha=0.9)+theme_bw()+scale_fill_hue()+ggtitle("Price range per Sales Channel 2006-2017")
+#ggplot(data=wfp_market_..., mapping=aes(x=year, y=usd, color=sales_channel))+geom_boxplot(size=0.8, alpha=0.3)+ggtitle("Prices USD all countries 2006-2017")
 
 # Verteilung Preise pro Sales Channel pro Monat *
 plot_price_sales_channel_month<-ggplot(data=wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, mapping=aes(x=month, y=usd, color=sales_channel))+geom_jitter(width=0.2, size=1, alpha=0.5)+theme_bw()+ggtitle("Price range per Sales Channel per month")
 ggsave(filename = "plot_price_sales_channel_month.png", plot = plot_price_sales_channel_month)
 
+# Boxplot Preise pro Sales Channel (nicht so gut geeignet)
+ggplot(data=wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, mapping=aes(y=usd, x=sales_channel, color=sales_channel))+geom_boxplot(size=0.8, alpha=0.3)+theme_bw()+ggtitle("Prices per Sales Channel")
+
+# Linie mit Durchschnittspreis in plot auf Jahr-und Monatsebene einbringen -??
+#abline(v=median(wfp_market_food_prices_final1$usd), col="magenta", lwd=4)
+
+# Histogram count pro Sales Channel 2006-2017 - nebeneinander gestapelt
+#wfp_market_food_prices_final1%>%select(year, sales_channel)%>%ggplot(mapping=aes(x=year, fill=sales_channel))+facet_wrap(~sales_channel)+geom_histogram(binwidth=0.8)
+
 # Haeufigkeit der Produkte pro Sales Channel (gestapelte Punkte) *
 count_product_sales_channel<-wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change%>%select(sales_channel, product)%>%ggplot(aes(x=sales_channel, y=product))+geom_count(col="brown")+theme_bw(base_size = 9)+ggtitle("Counts per product on Sales Channel")
 ggsave(filename = "count_product_sales_channel.png", plot = count_product_sales_channel)
 
-# Verteilung Preis Retail & Wholesale auf Produkte *
+# Verteilung Preis Retail & Wholesale auf Produkte - nicht geeignet
 plot_price_sales_channel_product<-wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change%>%select(usd, product, sales_channel)%>%ggplot(mapping=aes(x=usd, y=product, color=sales_channel, shape=sales_channel))+geom_jitter(width=0.1, size=0.5, alpha=0.7)+scale_colour_manual(values=palette)+theme_bw(base_size = 9)+ggtitle("Price per Sales Channel on products")
 ggsave(filename = "plot_price_sales_channel_product.png", plot = plot_price_sales_channel_product)
+
 
 #Scatterplot Matrix *
 ggpairs(Apples, columns=c("usd", "country"), aes(fill=country))+theme_bw(base_size = 7)
 
-# Plots speichern:
-#ggsave(Dateiname="my_plot.png", plot=my_plot)
+#ungeeignet
+#ggplot(wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, aes(x=month, y=usd)) + geom_step(colour="blue")
 
-
-# *** ENDE PLOTS ***
-
-
-# Mittelwert und Standardabweichung
 
 # Mittelwert Preise alle Laender 2006 bis 2017
 mean_all_prices<-mean(wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change$usd)
@@ -194,14 +203,22 @@ head(mean_all_prices)
 sd(wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change$usd)
 
 
+# Plots speichern:
+#ggsave(Dateiname="my_plot.png", plot=my_plot)
 
 
 
-# Erstellen Datensatz fuer Arima Modell und Lineare Regression
+
+
+
+
+
+
+# Datensatz Arima Modell und Lineare Regression
 Dataset_Arima<-select(wfp_market_food_prices_inUSD_changed_units_and_prices_neu_neu_date_change, product, country, usd, month_year, year)
 
 
-# *** Arima Modell: ***
+#Arima Modell:
 
 # Erstellung der Zeitreihe (ts Funktion); Frequency=12 Monate, ab 01/2006 bis 12/2017
 price_test_arima<-ts(Dataset_Arima$usd, start=c(2006,1),end=c(2017,12), frequency = 12)
@@ -227,6 +244,8 @@ monthplot(price_test_arima, ylab="Price in USD", xlab="Month")+title(main="Price
 
 # Autokorrelation: Korrelation innerhalb der Zeitreihe durch Verschiebung (lag)
 acf(price_test_arima)
+
+
 
 
 
@@ -270,7 +289,7 @@ acf(price_apples_arima)
 ccf(window(price_apples_arima, start=c(2017,1), end=c(2017,12)), window(price_apples_arima, start=c(2017,1), end=c(2017,12)), main="Crosscorelation 2017")
 
 
-# *** ENDE Arima Modell ***
+
 
 
 
@@ -294,26 +313,21 @@ ggplot(Dataset_Arima, aes(x = year, y = usd))+geom_point()+theme_light()+geom_sm
 
 
 # lm Funktion braucht immer die Form (dependent~independent), z.b. Y-Achse: USD dependent variable (predicted); X-Achse independent (predictor)
-# Steigung der Linie ist estimate des Koeffizienten von "product" (= unabhaengige Variable der Daten) -> Wert in Spalte Estimate ab zweiter Zeile
+# Steigung der Linie ist estimate des Koeffizienten von "product" (= unabh?ngige Variable der Daten) -> Wert in Spalte Estimate ab zweiter Zeile
 # Standard error der Steigung in Spalte Std.error ab zweiter Zeile
-<<<<<<< HEAD
-# Ein Koeffizient wird zu 95% zwischen 2 standard errors von seinem Estimate liegen. 
-# Mittelwert als horizontale Linie einfuegen, Triangle (Steigung ab dem Mittelpunkt) evtl mit wage und price
-=======
 # Ein Koeffizient wird zu 95% zwischen 2 standard errors von seinem Estimate liegen.
 # Mittelwert als horizontale Linie einf?gen, Triangle (Steigung ab dem Mittelpunkt) evtl mit wage und price
->>>>>>> 188cb959d238a48b3bda51e25f6ecaf251ff5863
 # Variance residuals berechnen (var(lm$residuals)); variance Variable (var(data$usd)); variance slope und ic (var(est(ols.slope, ols.ic))
 # all.equal(varusd, varRes + varEst)
 # var(data)=var(estimate)+var(residuals), d.h. variance of estimate is always less than variane of the data, also variance of residuals
 # cov(lm$residuals, data$variablexy) - zeigt dass die residuals nicht mit der Variablen xy korrelieren
-# Regression Line geht durch die Daten, welche den minimum squared error (MSE) haben, die vertikale Distanz zwischen actuals usd und predicted usd durch die Linie
+# Regression LIne geht durch die DAten, welche den minimum squared error (MSE) haben, die vertikale Distanz zwischen actuals usd und predicted usd durch die Linie
 # Schnittpunkt horizontale und vertikale Linie (jeweils Mittelwert der X und Y-Achse); die Steigung der Regression Line ist die Korrelation zwischen den zwei datasets * ratio standard deviation (USD zu Jahr, oder outcomes zu predictors)
 # MSE berechnen anhand der Steigung (manipulate Funktion)
 
 
 
-# ***Test Lineare Regression am Beispiel Rice und Apples***
+# ***Test Lineare Regression am Beispiel Rice***
 
 # (Test Beispiel mit gapminder dataset)
 # Preisentwicklung pro Produkt pro Jahr
@@ -335,6 +349,7 @@ Apples%>%add_residuals(Apple_mod)%>%ggplot(aes(year, resid))+geom_hline(yinterce
 ggplot(data=Rice, aes(Rice_mod$residuals))+geom_histogram(binwidth = 1, color = "black", fill = "purple4")+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())+ggtitle("Histogram for Model Residuals")
 ggplot(data=Apples, aes(Apple_mod$residuals))+geom_histogram(binwidth = 1, color = "black", fill = "purple4")+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())+ggtitle("Histogram for Model Residuals")
 
+
 # Regressionsgerade im Streudiagramm
 ggplot(Rice, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "Linear Model fitted to data (lm(usd ~ year, data = Rice))")
 ggplot(Apples, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light()+geom_smooth(method = "lm", se = FALSE, size = 1, color="red")+labs(x = "Year", y = "USD", title = "Linear Model fitted to data (lm(usd ~ year, data = Apples))")
@@ -342,11 +357,15 @@ ggplot(Apples, aes(x = year, y = usd))+geom_point(color="darkblue")+theme_light(
 # * Regressionsgerade mit Graustufen = Vertrauensintervall, d.h. die Wahrscheinlichkeit liegt bei 95%, dass das Regressionsmodel innerhalb des Vertrauensintervalls liegt
 ggplot(data = Rice, aes(x = year, y = usd))+geom_point()+stat_smooth(method = "lm", col = "red") +theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+ggtitle("Linear Model Fitted to Data")
 
-# --> plot Regressionsdiagnostik mit ggfortify
+# plot Regressionsdiagnostik mit ggfortify
 autoplot(Rice_mod)
 
 mean(Rice_mod$residuals) # Mittelwert lm und residuals (muss nahe 0 liegen)
-hist(residuals(Rice_mod)) # Histogram Residuals Rice data
+#hist(residuals(Rice_mod)) # Histogram Residuals Rice data
+
+
+# shows fitted values and residuals for each of the original points in the regression
+#augment(Rice_mod)
 
 # Model quality
 broom::glance(Rice_mod)
@@ -379,10 +398,8 @@ resids<-unnest(by_product_country, resids)
 # Plot residuals total
 resids%>%ggplot(aes(year, resid))+geom_jitter(aes(group=product, color="red"), alpha=1/3)+geom_smooth(se=FALSE)+ggtitle("Residuals all products")
 # * Plot residuals per country and products --> je näher die PUnkte an 0, desto besser eignet sich das Model
-resids_all_countries<-resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~country)+theme_bw(base_size = 8)+ggtitle("Residuals per country over all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(filename= "resids_all_countries.png", plot=resids_all_countries)
-resids_all_products<-resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~product)+theme_bw(base_size = 8)+ggtitle("Residuals per product over all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(filename= "resids_all_products.png", plot=resids_all_products)
+resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~country)+theme_bw(base_size = 8)+ggtitle("Residuals per country over all products")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+resids%>%ggplot(aes(year, resid, group=product))+geom_jitter(alpha=1/3, color="red")+facet_wrap(~product)+theme_bw(base_size = 8)+ggtitle("Residuals per product over all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # * Plot linear trend per country and product - (--> einzelne Produkte auswählen prediction auf alle Laender)
 Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geom_line(color="darkred", lwd=1)+facet_wrap(~country)+theme_bw(base_size = 9)+ggtitle("Linear trend all countries")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -392,23 +409,21 @@ Dataset_Arima%>%add_predictions(lm)%>%ggplot(aes(year, pred, group=product))+geo
 ggplot(data = Rice, aes(x = year, y = usd, group=product))+geom_point()+stat_smooth(method = "lm", col = "red")+facet_wrap(~country)+theme_bw(base_size = 9)+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Linear model fitted to data")
 ggplot(data = Apples, aes(x = year, y = usd, group=product))+geom_point()+stat_smooth(method = "lm", col = "red")+facet_wrap(~country)+theme_bw(base_size = 9)+theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Linear model fitted to data")
 
+
 # Model quality
 glance<-by_product_country%>%mutate(glance=map(model, broom::glance))%>%unnest(glance, .drop=TRUE)
 # Looking for models that do not fit well - sortieren mit arrange nach r.squared; schlechteste Werte oben (hier: Oil, Ground nuts, Fish, Wheat, Flour usw. in den jeweiligen Ländern)
 glance%>%arrange(r.squared)
 # Plot r.squared alle Produkte; je höher der Wert desto besser, je naeher an 0 desto schlechter das Model
-r_squared_product<-glance%>%ggplot(aes(product, r.squared))+geom_jitter(width=0.5, color="darkblue")+theme_bw(base_size=9)+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Model quality per product - bad fit<0.25; good fit>0.75")
-ggsave(filename = "r_squared_all_products.png", plot=r_squared_product)
-r_squared_country<-glance%>%ggplot(aes(country, r.squared))+geom_jitter(width=0.5, color="darkblue")+theme_bw(base_size=9)+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Model quality per country - bad fit<0.25; good fit>0.75")
-ggsave(filename= "r_squared_all_countries.png", plot=r_squared_country)
+glance%>%ggplot(aes(product, r.squared))+geom_jitter(width=0.5, color="darkblue")+theme_bw(base_size=9)+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Model quality per product")
+glance%>%ggplot(aes(country, r.squared))+geom_jitter(width=0.5, color="darkblue")+theme_bw(base_size=9)+theme(axis.text.x = element_text(angle = 90, hjust = 1))+ggtitle("Model quality per country")
 # Plot bad fit (R^2<0.25 R^2); good fit (R^2>0.75)
 bad_fit<-filter(glance, r.squared<0.25)
 # Plot Produkte mit bad fit
 Dataset_Arima%>%semi_join(bad_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Bad Fit on product - r.squared<0.25")
 good_fit<-filter(glance, r.squared>0.75)
 # Plot Produkte mit good fit
-products_good_fit<-Dataset_Arima%>%semi_join(good_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Good Fit on product - r.squared>0.75")
-ggsave(filename= "products_good_fit.png", plot=products_good_fit)
+Dataset_Arima%>%semi_join(good_fit, by="product")%>%ggplot(aes(year, usd, color=product))+geom_jitter()+ggtitle("Good Fit on product - r.squared>0.75")
 
 # *** Ende Lineare Regression auf alle Produkte und Laender
 
