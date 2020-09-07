@@ -10,7 +10,7 @@ forcastingWithArima <- function(selectedData){
   # plot(price_test_arima, axes=F, xlab="Entwicklung Preise 2006 bis 2017", col="darkblue")
   # Arima Modell erstellen
   fit_arima_test <- auto.arima(data$usd, seasonal=FALSE)
-  # Plot Prognose f?r die n?chsten 24 Monate
+  # Plot Prognose fuer die naechsten 36 Monate
   print(forecast(fit_arima_test, 36))
   # Trendlinie:
   #lines(lowess(price_test_arima), col="red")

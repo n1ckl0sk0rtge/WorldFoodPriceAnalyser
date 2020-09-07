@@ -1,9 +1,14 @@
+library(devtools)
 library(shiny)
 library(leaflet)
 library(maps)
 library(sp)
 library(rgdal)
 library(dplyr)
+library(ggplot2)
+library(png)
+library(broom)
+library(ggfortify)
 
 source("./../functions/dataPreprocessFunction.R")
 
@@ -13,12 +18,14 @@ source("./../functions/frequencyOfProductsPerSalesChannel.R")
 
 source("./../functions/NeuronalNetwork_Nicklas.R")
 source("./../functions/LinearRegression_Tanja.R")
-source("./../functions/Arima.R")
-
-source("./../functions/testPlot.R")
 
 worldgeodata <- readRDS("./../data/worldgeodata.RDS")
 foodData <- readRDS("./../data/wfp_data.RDS")
+
+
+
+
+
 
 server <- function(input, output, session) {
 
@@ -95,6 +102,25 @@ server <- function(input, output, session) {
     
   }) 
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   observe({
     foodDataForProduct <- unique(filter(foodData, product == input$selectProductsForForcast)$country)
 
@@ -119,6 +145,16 @@ server <- function(input, output, session) {
   })
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   output$forcastPlot <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
     
@@ -128,22 +164,65 @@ server <- function(input, output, session) {
            forcast <- forcastingWithNN(selectedData)
     )
     
-    # forcastingWithArima(selectedData)
-    
     averageFoodPriceDevelopment(selectedData, forcast)
   })
   
-  output$testPlot <- renderPlot({
+  output$regressionsGeradeLM <- renderPlot({
+    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+    
+    data <- select(selectedData, product, country, usd, year)
+    model <- lm(usd~year, data=data)
+      
+    plot <- ggplot(data = data, aes(x = year, y = usd)) +
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())
+    
+    print(plot)
+  })
+  
+  output$residualsLM <- renderPlot({
+    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+    
+    data <- select(selectedData, product, country, usd, year)
+    model <- lm(usd~year, data=data)
+    
+    plot <- ggplot(data=data, aes(model$residuals)) + 
+      geom_histogram(binwidth = 1, color = "black", fill = "purple4") + 
+      theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())
+    
+    print(plot)
+  })
+  
+  output$summaryOfModel <- renderPrint({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
     
     switch(input$selectForecastModelForForcast,
-           "1" = forcast <- forcastingWithLinearRegression(selectedData),
-           "2" = forcast <- forcastingWithNN(selectedData),
-           forcast <- forcastingWithNN(selectedData)
+           "1" = model <- lm(usd~year, data=selectedData),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePredictionFinal.RDS"),
+           model <- lm(usd~year, data=selectedData)
     )
     
-    testrenderer(selectedData, forcast)
+    summary(model)
   })
+  
+  output$qualityOfModel <- renderPrint({
+    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+    
+    switch(input$selectForecastModelForForcast,
+           "1" = model <- lm(usd~year, data=selectedData),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePredictionFinal.RDS"),
+           model <- lm(usd~year, data=selectedData)
+    )
+    
+    if(input$selectForecastModelForForcast != "2"){
+      print(broom::glance(model))
+    } else {
+      print("No values")
+    }
+    
+  })
+
 
   
 }

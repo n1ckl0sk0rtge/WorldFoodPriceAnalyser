@@ -9,7 +9,7 @@ frequencyOfProductsPerSalesChannel <- function(selectedData){
   plot_price_sales_channel_year <- ggplot(data=dataframe, mapping=aes(x=sales_channel, y=usd, color=sales_channel, shape=sales_channel)) + 
       geom_jitter(size=1, alpha=0.7) + 
       scale_colour_manual(values = palette) + 
-      theme_bw()
+      theme(legend.position="none")
   
   print(plot_price_sales_channel_year)
 }
