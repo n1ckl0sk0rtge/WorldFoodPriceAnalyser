@@ -2,7 +2,7 @@ library(dplyr)
 library(ggplot2)
 
 forcastingWithLinearRegression <- function(selectedData){
-  
+
   data <- select(selectedData, usd, year)
   
   model <- lm(usd~year, data=data)

@@ -3,7 +3,7 @@ library(dplyr)
 library(ggplot2)
 
 forcastingWithNN <- function(selectedData){
-  model <- readRDS("./../data/neuralnetworkForPricePrediction5.RDS")
+  model <- readRDS("./../data/neuralnetworkForPricePrediction.RDS")
   
   product_value <- unique(select(selectedData, product_ID))$product_ID[1]
   counrty_value <- unique(select(selectedData, country_ID))$country_ID[1]
@@ -15,8 +15,7 @@ forcastingWithNN <- function(selectedData){
   testData <- data.frame(year, county, product)
   
   predict <- compute(model, testData)
-  
-  #print(predict)
+
   
   year_forcast <- year_forcast <- data.frame(year = seq(as.Date("2018-01-01"), by="1 month", length.out=36))
   price_forcast <- predict$net.result

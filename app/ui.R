@@ -5,6 +5,12 @@ library(leaflet)
 library(dplyr)
 library(leaflet.extras)
 
+list.of.packages <- c("shiny", "shinydashboard", "shinythemes", "leaflet", "leaflet.extras", "dplyr", "maps", "sp",
+                      "rgdal", "dplyr", "ggplot2", "broom", "ggfortify", "forecast", "ggplot2", "reshape2", "neuralnet")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+
 # Read data from rds-file
 data <- readRDS("./../data/wfp_data.RDS")
 # list countries without duplicates
@@ -129,7 +135,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
         
         
         selectInput("selectForecastModelForForcast", label = h4("Select Forecast Model"), 
-                    choices = list("Linieare Regression" = 1, "Neuronales Netz" = 2, "RandomForest" = 3), 
+                    choices = list("Linieare Regression" = 1, "Neuronales Netz" = 2, "Arima" = 3), 
                     selected = 1),
         hr()
         
@@ -147,9 +153,11 @@ ui <- fluidPage(theme = shinytheme("flatly"),
         ")),
         
         tabsetPanel(type = "tabs",
-                    tabPanel("residuals", plotOutput("residualsLM")),
-                    tabPanel("fitness", img(src="r_squared_all_products.png", width='100%'), hr(), img(src="r_squared_all_countries.png", width='100%')),
-                    tabPanel("neuronal network", img(src="nn.png", width='100%'))
+                    tabPanel("[LR] regression line", plotOutput("regressionsGeradeLM")),
+                    tabPanel("[LR] residuals", plotOutput("residualsLM")),
+                    tabPanel("[LR] fit", img(src="r_squared_all_products.png", width='100%'), hr(), img(src="r_squared_all_countries.png", width='100%')),
+                    tabPanel("[NN] neuronal network", img(src="nn.png", width='100%')),
+                    tabPanel("[AR] Arima", plotOutput("resultAR"))
         ),
         hr(),
         

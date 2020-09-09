@@ -1,4 +1,3 @@
-library(devtools)
 library(shiny)
 library(leaflet)
 library(maps)
@@ -6,7 +5,6 @@ library(sp)
 library(rgdal)
 library(dplyr)
 library(ggplot2)
-library(png)
 library(broom)
 library(ggfortify)
 
@@ -18,6 +16,7 @@ source("./../functions/frequencyOfProductsPerSalesChannel.R")
 
 source("./../functions/NeuronalNetwork_Nicklas.R")
 source("./../functions/LinearRegression_Tanja.R")
+source("./../functions/ARIMA_Robert.R")
 
 worldgeodata <- readRDS("./../data/worldgeodata.RDS")
 foodData <- readRDS("./../data/wfp_data.RDS")
@@ -155,31 +154,36 @@ server <- function(input, output, session) {
   
   
   
+  
+  
+  
   output$forcastPlot <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
     
     switch(input$selectForecastModelForForcast,
            "1" = forcast <- forcastingWithLinearRegression(selectedData),
            "2" = forcast <- forcastingWithNN(selectedData),
-           forcast <- forcastingWithNN(selectedData)
+           "3" = forcast <- forcastingWithArima(selectedData),
+           forcast <- forcastingWithLinearRegression(selectedData)
     )
     
     averageFoodPriceDevelopment(selectedData, forcast)
   })
   
-  # output$regressionsGeradeLM <- renderPlot({
-  #   selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
-  #   
-  #   data <- select(selectedData, product, country, usd, year)
-  #   model <- lm(usd~year, data=data)
-  #     
-  #   plot <- ggplot(data = data, aes(x = year, y = usd)) +
-  #     geom_point() +
-  #     stat_smooth(method = "lm", col = "red") +
-  #     theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())
-  #   
-  #   print(plot)
-  # })
+  output$regressionsGeradeLM <- renderPlot({
+    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+
+    data <- select(selectedData, product, country, usd, year)
+    model <- lm(usd~year, data=data)
+
+    plot <- ggplot(data = data, aes(x = year, y = usd)) +
+      geom_point() +
+      stat_smooth(method = "lm", col = "#2C3E50") +
+      xlab("year") + ylab("price in USD") +
+      theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())
+
+    print(plot)
+  })
   
   output$residualsLM <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
@@ -195,12 +199,47 @@ server <- function(input, output, session) {
     print(plot)
   })
   
+  output$resultAR <- renderPlot({
+    selectedData <- preprocessData(foodData, input$selectProducts, input$sliderYears, selectedCountries$ids)
+    
+    data <- select(selectedData, usd, month_year)
+    
+    Dates_unique <- distinct(data ,month_year, keep_all=FALSE)
+    Dates_unique <- Dates_unique[order(as.Date(Dates_unique$month_year)),]
+    
+    foodData_Median <- data.frame(Date=as.Date(character()), Median=double())
+    
+    for (row in 1:nrow(Dates_unique)){
+      thisDate <- Dates_unique[row,1]
+      foodData_with_Date <- subset(data, data$month_year == thisDate)
+      
+      foodData_Median_newRow <- c(toString(thisDate),mean(foodData_with_Date$usd))
+      foodData_Median <- rbind(foodData_Median, foodData_Median_newRow)
+    }
+    
+    names(foodData_Median) <- c("Date","Median")
+    
+    start_year <- substring(Dates_unique[1,1],1,4)
+    start_month <- substring(Dates_unique[1,1],6,7)
+    
+    stop_year <- substring(tail(Dates_unique$month_year,1),1,4)
+    stop_month <- substring(tail(Dates_unique$month_year,1),6,7)
+    
+    ts_test <- ts(as.numeric(foodData_Median$Median), start=c(start_year,start_month),end=c(stop_year,stop_month), frequency = 12)
+    fit_test <- auto.arima(ts_test)
+    
+    arima_result <- forecast(fit_test, 36)
+    
+    plot(arima_result)
+
+  })
+  
   output$summaryOfModel <- renderPrint({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
     
     switch(input$selectForecastModelForForcast,
            "1" = model <- lm(usd~year, data=selectedData),
-           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction3.RDS"),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction.RDS"),
            model <- lm(usd~year, data=selectedData)
     )
     
@@ -212,7 +251,7 @@ server <- function(input, output, session) {
     
     switch(input$selectForecastModelForForcast,
            "1" = model <- lm(usd~year, data=selectedData),
-           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction3.RDS"),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction.RDS"),
            model <- lm(usd~year, data=selectedData)
     )
     

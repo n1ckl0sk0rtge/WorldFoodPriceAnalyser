@@ -17,11 +17,11 @@ initNeuronalNetwork <- function(fooddata){
   
   View(trainData)
                         # +country+product
-  network = neuralnet(price~year+product+country, data=trainData, hidden=c(5,4), algorithm="rprop+",
-                      err.fct = "sse", act.fct = "logistic", lifesign = "full", rep=1, stepmax = 5e+6,
+  network = neuralnet(price~year+product+country, data=trainData, hidden=c(3,7,5,2), algorithm="rprop+",
+                      err.fct = "sse", act.fct = "logistic", lifesign = "full", rep=1, stepmax = 1e+7,
                       linear.output = TRUE, threshold = 1)
   
-  saveRDS(network, "/Users/nkoertge/Documents/001_StudienDocs/08_SoSe\ 2020/Anwendungsentwicklung/Application/data/neuralnetworkForPricePrediction5.RDS")
+  saveRDS(network, "/Users/nkoertge/Documents/001_StudienDocs/08_SoSe\ 2020/Anwendungsentwicklung/Application/data/neuralnetworkForPricePrediction9.RDS")
   
   print(network$result.matrix)
 }
