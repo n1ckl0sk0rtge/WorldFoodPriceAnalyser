@@ -41,7 +41,8 @@ server <- function(input, output, session) {
                        options = providerTileOptions(minZoom = 2, maxZoom = 3)) %>%
       addPolygons( data = countriesWithThoseProducts,
                    layerId =  countriesWithThoseProducts@data$name,
-                   fillColor = "green", 
+                   fillColor = "#2C3E50", 
+                   fillOpacity = 1,
                    stroke = FALSE,
                    group = "selectedCountries",
                    
@@ -71,7 +72,8 @@ server <- function(input, output, session) {
       leaflet::leafletProxy( mapId = "myMap" ) %>%
         addPolygons( data = slectedCountry,
                      layerId = slectedCountry@data$name,
-                     fillColor = "green",
+                     fillColor = "#2C3E50", 
+                     fillOpacity = 1,
                      stroke = FALSE,
                      group = "selectedCountries",
                      
@@ -88,7 +90,8 @@ server <- function(input, output, session) {
       leaflet::leafletProxy( mapId = "myMap" ) %>%
         addPolygons( data = slectedCountry,
                      layerId = slectedCountry@data$name,
-                     fillColor = "red",
+                     fillColor = "#517394",
+                     fillOpacity = 1,
                      stroke = FALSE,
                      group = "selectedCountries",
                      
@@ -152,9 +155,6 @@ server <- function(input, output, session) {
   
   
   
-  
-  
-  
   output$forcastPlot <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
     
@@ -167,19 +167,19 @@ server <- function(input, output, session) {
     averageFoodPriceDevelopment(selectedData, forcast)
   })
   
-  output$regressionsGeradeLM <- renderPlot({
-    selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
-    
-    data <- select(selectedData, product, country, usd, year)
-    model <- lm(usd~year, data=data)
-      
-    plot <- ggplot(data = data, aes(x = year, y = usd)) +
-      geom_point() +
-      stat_smooth(method = "lm", col = "red") +
-      theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())
-    
-    print(plot)
-  })
+  # output$regressionsGeradeLM <- renderPlot({
+  #   selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
+  #   
+  #   data <- select(selectedData, product, country, usd, year)
+  #   model <- lm(usd~year, data=data)
+  #     
+  #   plot <- ggplot(data = data, aes(x = year, y = usd)) +
+  #     geom_point() +
+  #     stat_smooth(method = "lm", col = "red") +
+  #     theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(), axis.line.y=element_line())
+  #   
+  #   print(plot)
+  # })
   
   output$residualsLM <- renderPlot({
     selectedData <- preprocessData(foodData, input$selectProductsForForcast, list(2006, 2017), input$selectCountryForForcast)
@@ -188,7 +188,8 @@ server <- function(input, output, session) {
     model <- lm(usd~year, data=data)
     
     plot <- ggplot(data=data, aes(model$residuals)) + 
-      geom_histogram(binwidth = 1, color = "black", fill = "purple4") + 
+      geom_histogram(binwidth = 1, fill = "#2C3E50") + 
+      xlab("residuals") + ylab("count") +
       theme(panel.background = element_rect(fill = "white"),axis.line.x=element_line(),axis.line.y=element_line())
     
     print(plot)
@@ -199,7 +200,7 @@ server <- function(input, output, session) {
     
     switch(input$selectForecastModelForForcast,
            "1" = model <- lm(usd~year, data=selectedData),
-           "2" = model <- readRDS("./../data/neuralnetworkForPricePredictionFinal.RDS"),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction3.RDS"),
            model <- lm(usd~year, data=selectedData)
     )
     
@@ -211,7 +212,7 @@ server <- function(input, output, session) {
     
     switch(input$selectForecastModelForForcast,
            "1" = model <- lm(usd~year, data=selectedData),
-           "2" = model <- readRDS("./../data/neuralnetworkForPricePredictionFinal.RDS"),
+           "2" = model <- readRDS("./../data/neuralnetworkForPricePrediction3.RDS"),
            model <- lm(usd~year, data=selectedData)
     )
     
